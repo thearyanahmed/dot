@@ -1,7 +1,7 @@
 ## DOT 
 
-#### dot (DNS over TLS)
-
+DOT accepts conventional DNS requests and proxy it to DNS servers with [DNS over TLS (DoT)](https://en.wikipedia.org/wiki/DNS_over_TLS). DoT provides privacy and security improvements taking advantage of encrypted DNS traffic. For more information follow [RFC7858](https://datatracker.ietf.org/doc/html/rfc7858) and [RFC7626](https://datatracker.ietf.org/doc/html/rfc7626) [https://developers.cloudflare.com/1.1.1.1/dns-over-tls](https://developers.cloudflare.com/1.1.1.1/dns-over-tls)
+.
 
 ### Running with docker 
 
