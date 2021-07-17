@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
 	"github.com/caarlos0/env"
 	"github.com/miekg/dns"
 	"github.com/thearyanahmed/dot/cmd"
@@ -18,6 +20,13 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGTERM, os.Interrupt, syscall.SIGINT)
 
 	cfg := cmd.Config{}
+	err := env.Parse(&cfg)
+
+	if err != nil {
+		log.Fatalf("failed to parse env. \nmsg:%v\nexiting", err.Error())
+	}
+
+	fmt.Printf("cfg:%v\n", cfg)
 
 	c := new(dns.Client)
 	c.Net = "tcp-tls"
@@ -25,15 +34,17 @@ func main() {
 		Timeout: cfg.UpstreamTimeout,
 	}
 
-	h := cmd.NewHandler(c,cfg)
+	h := cmd.NewHandler(c, cfg)
 
-	h.StartServer()
+	log.Printf("starting servers")
+	cmd.StartServers(cfg)
 
-	dns.Handle(".",h)
+	log.Printf("setting up dns handler")
+	dns.Handle(".", h)
 
 	// handle signals
 	sig := <-sigChan
 
 	log.Printf("signal termianted. msg:%v\n", sig.String())
-	h.Shutdown()
+	cmd.ShutdownServers()
 }
