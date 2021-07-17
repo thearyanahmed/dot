@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
+	"github.com/caarlos0/env"
 	"github.com/miekg/dns"
 	"github.com/thearyanahmed/dot/cmd"
 )
@@ -17,7 +17,7 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM, os.Interrupt, syscall.SIGINT)
 
-	cfg := &cmd.Config{}
+	cfg := cmd.Config{}
 
 	c := new(dns.Client)
 	c.Net = "tcp-tls"
@@ -25,8 +25,15 @@ func main() {
 		Timeout: cfg.UpstreamTimeout,
 	}
 
+	h := cmd.NewHandler(c,cfg)
+
+	h.StartServer()
+
+	dns.Handle(".",h)
+
 	// handle signals
 	sig := <-sigChan
 
 	log.Printf("signal termianted. msg:%v\n", sig.String())
+	h.Shutdown()
 }

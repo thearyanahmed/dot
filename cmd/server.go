@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/miekg/dns"
@@ -10,6 +11,13 @@ type Handler struct {
 	client    *dns.Client
 	config    Config
 	tcpServer *dns.Server
+}
+
+func NewHandler(client *dns.Client,config Config) *Handler {
+	return &Handler{
+		client: client,
+		config: config,
+	}
 }
 
 func (h *Handler) StartServer() {
@@ -25,8 +33,25 @@ func (h *Handler) StartServer() {
 	log.Printf("started TCP server on port :853\n")
 }
 
+func (h *Handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+	rString := ""
 
-
+	for _, v := range r.Question {
+		rString += v.String()
+	}
+	
+	log.Printf("request: '%s'", rString)
+	
+	a, rtt, err := h.client.Exchange(r, fmt.Sprintf("%s:%s", h.config.UpstreamServer, h.config.UpstreamPort))
+	
+	if err != nil {
+		log.Printf("failed to communicate with upstream: %s", err)
+		return
+	}
+	
+	log.Printf("%s:%s", rString, rtt.String())
+	w.WriteMsg(a)
+}
 
 func (h *Handler) Shutdown() {
 	if h.tcpServer == nil {
