@@ -23,7 +23,7 @@ func StartServers(config Config) {
 		}
 
 		go tcpServer.ListenAndServe()
-		log.Printf("listenin to tcp/53\n")
+		log.Printf("listening to tcp/53\n")
 	}
 
 	if config.EnableUDP {
